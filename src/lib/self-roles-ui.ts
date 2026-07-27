@@ -15,19 +15,19 @@ export const SELF_ROLE_CLEAR_ID = 'selfrole:clear';
 export function buildSelfRolePanel(guild: Guild, entries: SelfRoleEntry[]) {
   const embed = new EmbedBuilder()
     .setColor(0x5865f2)
-    .setTitle('Wybierz swoje rangi')
+    .setTitle('Choose your roles')
     .setDescription(
       entries.length === 0
-        ? 'Brak skonfigurowanych rang. Admin może dodać je komendą `/selfrole add`.'
+        ? 'No roles configured yet. An admin can add them with `/selfrole add`.'
         : [
-            'Użyj menu poniżej, żeby **przełączyć** rangi (toggle).',
-            'Wybrane rangi: masz → zostaną odpięte; nie masz → zostaną dodane.',
-            'Pozostałe self-rangi zostają bez zmian.',
+            'Use the menu below to **toggle** roles.',
+            'Selected roles: you have them → removed; you don’t → added.',
+            'Other self-roles stay unchanged.',
             '',
             entries
               .map((e) => {
                 const role = guild.roles.cache.get(e.roleId);
-                const name = role?.toString() ?? `\`${e.label}\` (brak na serwerze)`;
+                const name = role?.toString() ?? `\`${e.label}\` (missing on server)`;
                 const emoji = e.emoji ? `${e.emoji} ` : '';
                 const desc = e.description ? ` — ${e.description}` : '';
                 return `${emoji}${name}${desc}`;
@@ -54,7 +54,7 @@ export function buildSelfRolePanel(guild: Guild, entries: SelfRoleEntry[]) {
       new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId(SELF_ROLE_SELECT_ID)
-          .setPlaceholder('Wybierz rangi…')
+          .setPlaceholder('Select roles…')
           .setMinValues(1)
           .setMaxValues(options.length)
           .addOptions(options),
@@ -62,7 +62,7 @@ export function buildSelfRolePanel(guild: Guild, entries: SelfRoleEntry[]) {
       new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
           .setCustomId(SELF_ROLE_CLEAR_ID)
-          .setLabel('Odepnij wszystkie self-rangi')
+          .setLabel('Remove all self-roles')
           .setStyle(ButtonStyle.Secondary),
       ),
     );

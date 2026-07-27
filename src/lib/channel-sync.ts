@@ -95,11 +95,11 @@ export async function syncGuildChannels(guild: Guild, onlyOutOfSync = true): Pro
 
 export function formatSyncResult(result: SyncResult): string {
   const lines: string[] = [];
-  lines.push(`Zsynchronizowano: **${result.synced.length}**`);
+  lines.push(`Synced: **${result.synced.length}**`);
   if (result.synced.length) lines.push(result.synced.map((n) => `• ${n}`).join('\n'));
-  lines.push(`Pominięto (już OK / brak kategorii): **${result.skipped.length}**`);
+  lines.push(`Skipped (already OK / no category): **${result.skipped.length}**`);
   if (result.failed.length) {
-    lines.push(`Błędy: **${result.failed.length}**`);
+    lines.push(`Failed: **${result.failed.length}**`);
     lines.push(result.failed.map((f) => `• ${f.name}: ${f.error}`).join('\n'));
   }
   return lines.join('\n');

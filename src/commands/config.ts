@@ -10,16 +10,16 @@ import type { Command } from '../types.js';
 export const configCommand: Command = {
   data: new SlashCommandBuilder()
     .setName('config')
-    .setDescription('Konfiguracja bota dla tego serwera')
+    .setDescription('Bot configuration for this server')
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .addSubcommand((sub) =>
       sub
         .setName('log-channel')
-        .setDescription('Ustaw kanał logów bota')
+        .setDescription('Set the bot log channel')
         .addChannelOption((opt) =>
           opt
-            .setName('kanał')
-            .setDescription('Kanał na logi (zostaw pusty żeby wyłączyć)')
+            .setName('channel')
+            .setDescription('Log channel (leave empty to disable)')
             .addChannelTypes(ChannelType.GuildText)
             .setRequired(false),
         ),
@@ -27,22 +27,22 @@ export const configCommand: Command = {
     .addSubcommand((sub) =>
       sub
         .setName('panel-channel')
-        .setDescription('Ustaw kanał, na którym /selfrole panel może być użyty')
+        .setDescription('Restrict /selfrole panel to a specific channel')
         .addChannelOption((opt) =>
           opt
-            .setName('kanał')
-            .setDescription('Kanał na panel (zostaw pusty żeby wyłączyć ograniczenie)')
+            .setName('channel')
+            .setDescription('Panel channel (leave empty to remove the restriction)')
             .addChannelTypes(ChannelType.GuildText)
             .setRequired(false),
         ),
     )
     .addSubcommand((sub) =>
-      sub.setName('show').setDescription('Pokaż aktualną konfigurację bota'),
+      sub.setName('show').setDescription('Show the current bot configuration'),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
     if (!interaction.guild) {
-      await interaction.reply({ content: 'Ta komenda działa tylko na serwerze.', ephemeral: true });
+      await interaction.reply({ content: 'This command can only be used in a server.', ephemeral: true });
       return;
     }
 
@@ -50,30 +50,30 @@ export const configCommand: Command = {
     const sub = interaction.options.getSubcommand();
 
     if (sub === 'log-channel') {
-      const channel = interaction.options.getChannel('kanał');
+      const channel = interaction.options.getChannel('channel');
       const cfg = await getGuildConfig(guildId);
       cfg.logChannelId = channel?.id ?? undefined;
       await setGuildConfig(guildId, cfg);
 
       await interaction.reply({
         content: channel
-          ? `Kanał logów ustawiony na ${channel}.`
-          : 'Kanał logów wyłączony.',
+          ? `Log channel set to ${channel}.`
+          : 'Log channel disabled.',
         ephemeral: true,
       });
       return;
     }
 
     if (sub === 'panel-channel') {
-      const channel = interaction.options.getChannel('kanał');
+      const channel = interaction.options.getChannel('channel');
       const cfg = await getGuildConfig(guildId);
       cfg.selfrolePanelChannelId = channel?.id ?? undefined;
       await setGuildConfig(guildId, cfg);
 
       await interaction.reply({
         content: channel
-          ? `Panel self-ról ograniczony do ${channel}.`
-          : 'Ograniczenie kanału panelu wyłączone — panel można wysłać wszędzie.',
+          ? `Self-role panel restricted to ${channel}.`
+          : 'Panel channel restriction removed — panel can be posted anywhere.',
         ephemeral: true,
       });
       return;
@@ -82,8 +82,8 @@ export const configCommand: Command = {
     if (sub === 'show') {
       const cfg = await getGuildConfig(guildId);
       const lines = [
-        `**Kanał logów:** ${cfg.logChannelId ? `<#${cfg.logChannelId}>` : 'nie ustawiony'}`,
-        `**Kanał panelu self-ról:** ${cfg.selfrolePanelChannelId ? `<#${cfg.selfrolePanelChannelId}>` : 'brak ograniczenia'}`,
+        `**Log channel:** ${cfg.logChannelId ? `<#${cfg.logChannelId}>` : 'not set'}`,
+        `**Self-role panel channel:** ${cfg.selfrolePanelChannelId ? `<#${cfg.selfrolePanelChannelId}>` : 'no restriction'}`,
       ];
       await interaction.reply({ content: lines.join('\n'), ephemeral: true });
     }

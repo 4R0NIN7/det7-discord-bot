@@ -12,7 +12,11 @@ Runtime: **Bun**
 4. Place the bot’s role **above** any self-assignable roles in the role list.
 5. `bun install` → `bun run register` → `bun run dev`
 
+Run tests: `bun test`
+
 ## Commands
 
 - `/selfrole add|remove|list|panel` — self-assignable roles
 - `/sync-channels all|category` — Sync Now for channels
+- `/clear` — purge messages from a text channel
+- `/config log-channel|panel-channel|show` — bot settings

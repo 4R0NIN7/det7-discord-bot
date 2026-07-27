@@ -12,7 +12,7 @@ import type { CommandCollection } from '../types.js';
 
 async function handleSelfRoleSelect(interaction: StringSelectMenuInteraction): Promise<void> {
   if (!interaction.guild) {
-    await interaction.reply({ content: 'Działa tylko na serwerze.', ephemeral: true });
+    await interaction.reply({ content: 'This only works in a server.', ephemeral: true });
     return;
   }
 
@@ -48,18 +48,18 @@ async function handleSelfRoleSelect(interaction: StringSelectMenuInteraction): P
     if (toRemove.length) await member.roles.remove(toRemove, 'Self-role panel');
   } catch {
     await interaction.reply({
-      content: 'Nie udało się zmienić rang. Sprawdź hierarchię ról bota i uprawnienie Manage Roles.',
+      content: 'Failed to update roles. Check the bot role hierarchy and Manage Roles permission.',
       ephemeral: true,
     });
     return;
   }
 
   const parts: string[] = [];
-  if (toAdd.length) parts.push(`Dodano: ${toAdd.map((id) => `<@&${id}>`).join(', ')}`);
-  if (toRemove.length) parts.push(`Usunięto: ${toRemove.map((id) => `<@&${id}>`).join(', ')}`);
-  if (failed.length) parts.push(`Pominięto (bot nie zarządza): ${failed.map((id) => `<@&${id}>`).join(', ')}`);
-  if (ignored.length) parts.push(`Pominięto (nie jest self-rolą): ${ignored.map((id) => `<@&${id}>`).join(', ')}`);
-  if (parts.length === 0) parts.push('Bez zmian.');
+  if (toAdd.length) parts.push(`Added: ${toAdd.map((id) => `<@&${id}>`).join(', ')}`);
+  if (toRemove.length) parts.push(`Removed: ${toRemove.map((id) => `<@&${id}>`).join(', ')}`);
+  if (failed.length) parts.push(`Skipped (bot cannot manage): ${failed.map((id) => `<@&${id}>`).join(', ')}`);
+  if (ignored.length) parts.push(`Skipped (not a self-role): ${ignored.map((id) => `<@&${id}>`).join(', ')}`);
+  if (parts.length === 0) parts.push('No changes.');
 
   if (toAdd.length || toRemove.length) {
     const logParts: string[] = [];
@@ -67,7 +67,7 @@ async function handleSelfRoleSelect(interaction: StringSelectMenuInteraction): P
     if (toRemove.length) logParts.push(`-${toRemove.map((id) => `<@&${id}>`).join(', ')}`);
     await logAction(interaction.client, guild.id, {
       title: 'Self-role toggle',
-      description: `${interaction.user} zmienił role: ${logParts.join(' | ')}`,
+      description: `${interaction.user} changed roles: ${logParts.join(' | ')}`,
       color: 0xfee75c,
       userId: interaction.user.id,
     });
@@ -78,7 +78,7 @@ async function handleSelfRoleSelect(interaction: StringSelectMenuInteraction): P
 
 async function handleSelfRoleClear(interaction: ButtonInteraction): Promise<void> {
   if (!interaction.guild) {
-    await interaction.reply({ content: 'Działa tylko na serwerze.', ephemeral: true });
+    await interaction.reply({ content: 'This only works in a server.', ephemeral: true });
     return;
   }
 
@@ -95,7 +95,7 @@ async function handleSelfRoleClear(interaction: ButtonInteraction): Promise<void
     });
 
   if (removable.length === 0) {
-    await interaction.reply({ content: 'Nie masz żadnych self-ról do odpięcia.', ephemeral: true });
+    await interaction.reply({ content: 'You have no self-roles to remove.', ephemeral: true });
     return;
   }
 
@@ -103,7 +103,7 @@ async function handleSelfRoleClear(interaction: ButtonInteraction): Promise<void
     await member.roles.remove(removable, 'Self-role clear');
   } catch {
     await interaction.reply({
-      content: 'Nie udało się odpiąć rang.',
+      content: 'Failed to remove roles.',
       ephemeral: true,
     });
     return;
@@ -111,20 +111,20 @@ async function handleSelfRoleClear(interaction: ButtonInteraction): Promise<void
 
   await logAction(interaction.client, guild.id, {
     title: 'Self-role clear',
-    description: `${interaction.user} odpiął wszystkie self-rangi: ${removable.map((id) => `<@&${id}>`).join(', ')}`,
+    description: `${interaction.user} removed all self-roles: ${removable.map((id) => `<@&${id}>`).join(', ')}`,
     color: 0xfee75c,
     userId: interaction.user.id,
   });
 
   await interaction.reply({
-    content: `Odpięto: ${removable.map((id) => `<@&${id}>`).join(', ')}`,
+    content: `Removed: ${removable.map((id) => `<@&${id}>`).join(', ')}`,
     ephemeral: true,
   });
 }
 
 export function registerEvents(client: Client): void {
   client.once(Events.ClientReady, (readyClient) => {
-    console.log(`Zalogowano jako ${readyClient.user.tag}`);
+    console.log(`Logged in as ${readyClient.user.tag}`);
   });
 
   client.on(Events.InteractionCreate, async (interaction: Interaction) => {
@@ -147,7 +147,7 @@ export function registerEvents(client: Client): void {
       }
     } catch (err) {
       console.error('Interaction error:', err);
-      const payload = { content: 'Wystąpił błąd przy obsłudze interakcji.', ephemeral: true };
+      const payload = { content: 'Something went wrong while handling that interaction.', ephemeral: true };
       if (interaction.isRepliable()) {
         if (interaction.replied || interaction.deferred) await interaction.followUp(payload);
         else await interaction.reply(payload);

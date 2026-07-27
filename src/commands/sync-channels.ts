@@ -10,27 +10,27 @@ import type { Command } from '../types.js';
 export const syncChannelsCommand: Command = {
   data: new SlashCommandBuilder()
     .setName('sync-channels')
-    .setDescription('Synchronizuje uprawnienia kanałów z ich kategorią (jak Sync Now w Discordzie)')
+    .setDescription('Sync channel permissions with their category (like Discord Sync Now)')
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels)
     .addSubcommand((sub) =>
       sub
         .setName('all')
-        .setDescription('Synchronizuje wszystkie niesynchronizowane kanały na serwerze')
+        .setDescription('Sync all out-of-sync channels on the server')
         .addBooleanOption((opt) =>
           opt
             .setName('force')
-            .setDescription('Wymuś sync nawet jeśli Discord uważa kanał za zsynchronizowany')
+            .setDescription('Force sync even if Discord already considers the channel synced')
             .setRequired(false),
         ),
     )
     .addSubcommand((sub) =>
       sub
         .setName('category')
-        .setDescription('Synchronizuje kanały w wybranej kategorii')
+        .setDescription('Sync channels in a selected category')
         .addChannelOption((opt) =>
           opt
-            .setName('kategoria')
-            .setDescription('Kategoria do synchronizacji')
+            .setName('category')
+            .setDescription('Category to sync')
             .addChannelTypes(ChannelType.GuildCategory)
             .setRequired(true),
         ),
@@ -38,14 +38,14 @@ export const syncChannelsCommand: Command = {
 
   async execute(interaction: ChatInputCommandInteraction) {
     if (!interaction.guild) {
-      await interaction.reply({ content: 'Ta komenda działa tylko na serwerze.', ephemeral: true });
+      await interaction.reply({ content: 'This command can only be used in a server.', ephemeral: true });
       return;
     }
 
     const me = interaction.guild.members.me;
     if (!me?.permissions.has(PermissionFlagsBits.ManageChannels)) {
       await interaction.reply({
-        content: 'Bot potrzebuje uprawnienia **Manage Channels**, żeby syncować kanały.',
+        content: 'The bot needs **Manage Channels** to sync channels.',
         ephemeral: true,
       });
       return;
@@ -62,10 +62,10 @@ export const syncChannelsCommand: Command = {
       return;
     }
 
-    const category = interaction.options.getChannel('kategoria', true);
+    const category = interaction.options.getChannel('category', true);
     const full = await interaction.guild.channels.fetch(category.id);
     if (!full || full.type !== ChannelType.GuildCategory) {
-      await interaction.editReply('Nie znaleziono kategorii.');
+      await interaction.editReply('Category not found.');
       return;
     }
 
