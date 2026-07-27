@@ -10,6 +10,9 @@ import {
   setGuildSelfRoles,
 } from '../lib/self-roles-store.js';
 import { botCanManageRole, buildSelfRolePanel } from '../lib/self-roles-ui.js';
+import { refreshPanel } from '../lib/panel-refresh.js';
+import { logAction } from '../lib/bot-logger.js';
+import { getGuildConfig } from '../lib/guild-config-store.js';
 import type { Command } from '../types.js';
 
 export const selfroleCommand: Command = {
@@ -96,8 +99,17 @@ export const selfroleCommand: Command = {
         emoji,
       });
 
+      await refreshPanel(interaction.client, guild.id);
+
+      await logAction(interaction.client, guild.id, {
+        title: 'Self-role dodana',
+        description: `${interaction.user} dodał ${role} do self-ról.`,
+        color: 0x57f287,
+        userId: interaction.user.id,
+      });
+
       await interaction.reply({
-        content: `Dodano ${role} do self-ról. Odśwież panel komendą \`/selfrole panel\`.`,
+        content: `Dodano ${role} do self-ról. Panel został automatycznie odświeżony.`,
         ephemeral: true,
       });
       return;
@@ -106,8 +118,18 @@ export const selfroleCommand: Command = {
     if (sub === 'remove') {
       const role = interaction.options.getRole('ranga', true);
       await removeSelfRole(guild.id, role.id);
+
+      await refreshPanel(interaction.client, guild.id);
+
+      await logAction(interaction.client, guild.id, {
+        title: 'Self-role usunięta',
+        description: `${interaction.user} usunął <@&${role.id}> z self-ról.`,
+        color: 0xed4245,
+        userId: interaction.user.id,
+      });
+
       await interaction.reply({
-        content: `Usunięto ${role} z self-ról.`,
+        content: `Usunięto <@&${role.id}> z self-ról. Panel został automatycznie odświeżony.`,
         ephemeral: true,
       });
       return;
@@ -134,6 +156,15 @@ export const selfroleCommand: Command = {
         return;
       }
 
+      const cfg = await getGuildConfig(guild.id);
+      if (cfg.selfrolePanelChannelId && interaction.channelId !== cfg.selfrolePanelChannelId) {
+        await interaction.reply({
+          content: `Panel self-ról może być wysłany tylko na <#${cfg.selfrolePanelChannelId}>. Zmień to komendą \`/config panel-channel\`.`,
+          ephemeral: true,
+        });
+        return;
+      }
+
       const data = await getGuildSelfRoles(guild.id);
       const payload = buildSelfRolePanel(guild, data.roles);
       const message = await interaction.channel.send(payload);
@@ -141,6 +172,13 @@ export const selfroleCommand: Command = {
       data.panelMessageId = message.id;
       data.panelChannelId = message.channelId;
       await setGuildSelfRoles(guild.id, data);
+
+      await logAction(interaction.client, guild.id, {
+        title: 'Panel self-ról wysłany',
+        description: `${interaction.user} wysłał panel na <#${message.channelId}>.`,
+        color: 0x5865f2,
+        userId: interaction.user.id,
+      });
 
       await interaction.reply({ content: 'Panel self-ról wysłany.', ephemeral: true });
     }

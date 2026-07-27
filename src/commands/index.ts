@@ -1,10 +1,11 @@
 import type { Client } from 'discord.js';
 import { Collection } from 'discord.js';
+import { configCommand } from '../commands/config.js';
 import { selfroleCommand } from '../commands/selfrole.js';
 import { syncChannelsCommand } from '../commands/sync-channels.js';
 import type { Command, CommandCollection } from '../types.js';
 
-const commandList: Command[] = [selfroleCommand, syncChannelsCommand];
+const commandList: Command[] = [configCommand, selfroleCommand, syncChannelsCommand];
 
 export function loadCommands(client: Client): CommandCollection {
   const commands = new Collection<string, Command>();

@@ -7,6 +7,7 @@ import {
 } from 'discord.js';
 import { getGuildSelfRoles } from '../lib/self-roles-store.js';
 import { botCanManageRole, SELF_ROLE_CLEAR_ID, SELF_ROLE_SELECT_ID } from '../lib/self-roles-ui.js';
+import { logAction } from '../lib/bot-logger.js';
 import type { CommandCollection } from '../types.js';
 
 async function handleSelfRoleSelect(interaction: StringSelectMenuInteraction): Promise<void> {
@@ -60,6 +61,18 @@ async function handleSelfRoleSelect(interaction: StringSelectMenuInteraction): P
   if (ignored.length) parts.push(`Pominięto (nie jest self-rolą): ${ignored.map((id) => `<@&${id}>`).join(', ')}`);
   if (parts.length === 0) parts.push('Bez zmian.');
 
+  if (toAdd.length || toRemove.length) {
+    const logParts: string[] = [];
+    if (toAdd.length) logParts.push(`+${toAdd.map((id) => `<@&${id}>`).join(', ')}`);
+    if (toRemove.length) logParts.push(`-${toRemove.map((id) => `<@&${id}>`).join(', ')}`);
+    await logAction(interaction.client, guild.id, {
+      title: 'Self-role toggle',
+      description: `${interaction.user} zmienił role: ${logParts.join(' | ')}`,
+      color: 0xfee75c,
+      userId: interaction.user.id,
+    });
+  }
+
   await interaction.reply({ content: parts.join('\n'), ephemeral: true });
 }
 
@@ -95,6 +108,13 @@ async function handleSelfRoleClear(interaction: ButtonInteraction): Promise<void
     });
     return;
   }
+
+  await logAction(interaction.client, guild.id, {
+    title: 'Self-role clear',
+    description: `${interaction.user} odpiął wszystkie self-rangi: ${removable.map((id) => `<@&${id}>`).join(', ')}`,
+    color: 0xfee75c,
+    userId: interaction.user.id,
+  });
 
   await interaction.reply({
     content: `Odpięto: ${removable.map((id) => `<@&${id}>`).join(', ')}`,

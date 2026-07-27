@@ -1,11 +1,10 @@
-import { Client, GatewayIntentBits, Partials } from 'discord.js';
+import { Client, GatewayIntentBits } from 'discord.js';
 import { config } from './config.js';
 import { loadCommands } from './commands/index.js';
 import { registerEvents } from './events/index.js';
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
-  partials: [Partials.GuildMember],
+  intents: [GatewayIntentBits.Guilds],
 });
 
 loadCommands(client);
