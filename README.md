@@ -17,6 +17,7 @@ Run tests: `bun test`
 ## Commands
 
 - `/selfrole add|remove|list|panel` — self-assignable roles
-- `/sync-channels all|category` — Sync Now for channels
+- `/sync-channels all|category|audit` — Sync Now + permission audit
+- `/channel create` — create a channel under a category (permissions synced)
 - `/clear` — purge messages from a text channel
 - `/config log-channel|panel-channel|show` — bot settings

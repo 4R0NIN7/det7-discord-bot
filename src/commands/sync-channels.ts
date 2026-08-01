@@ -1,10 +1,17 @@
 import {
   ChannelType,
+  MessageFlags,
   PermissionFlagsBits,
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
 } from 'discord.js';
-import { formatSyncResult, syncCategoryChannels, syncGuildChannels } from '../lib/channel-sync.js';
+import {
+  auditGuildChannelAccess,
+  formatAuditReport,
+  formatSyncResult,
+  syncCategoryChannels,
+  syncGuildChannels,
+} from '../lib/channel-sync.js';
 import type { Command } from '../types.js';
 
 export const syncChannelsCommand: Command = {
@@ -34,11 +41,16 @@ export const syncChannelsCommand: Command = {
             .addChannelTypes(ChannelType.GuildCategory)
             .setRequired(true),
         ),
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName('audit')
+        .setDescription('Check if category roles can access their child channels'),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
     if (!interaction.guild) {
-      await interaction.reply({ content: 'This command can only be used in a server.', ephemeral: true });
+      await interaction.reply({ content: 'This command can only be used in a server.', flags: MessageFlags.Ephemeral });
       return;
     }
 
@@ -46,14 +58,20 @@ export const syncChannelsCommand: Command = {
     if (!me?.permissions.has(PermissionFlagsBits.ManageChannels)) {
       await interaction.reply({
         content: 'The bot needs **Manage Channels** to sync channels.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const sub = interaction.options.getSubcommand();
+
+    if (sub === 'audit') {
+      const report = await auditGuildChannelAccess(interaction.guild);
+      await interaction.editReply(formatAuditReport(report));
+      return;
+    }
 
     if (sub === 'all') {
       const force = interaction.options.getBoolean('force') ?? false;

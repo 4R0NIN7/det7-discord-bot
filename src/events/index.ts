@@ -1,5 +1,7 @@
 import {
+  ActivityType,
   Events,
+  MessageFlags,
   type Client,
   type Interaction,
   type StringSelectMenuInteraction,
@@ -12,7 +14,7 @@ import type { CommandCollection } from '../types.js';
 
 async function handleSelfRoleSelect(interaction: StringSelectMenuInteraction): Promise<void> {
   if (!interaction.guild) {
-    await interaction.reply({ content: 'This only works in a server.', ephemeral: true });
+    await interaction.reply({ content: 'This only works in a server.', flags: MessageFlags.Ephemeral });
     return;
   }
 
@@ -49,7 +51,7 @@ async function handleSelfRoleSelect(interaction: StringSelectMenuInteraction): P
   } catch {
     await interaction.reply({
       content: 'Failed to update roles. Check the bot role hierarchy and Manage Roles permission.',
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
     return;
   }
@@ -73,12 +75,12 @@ async function handleSelfRoleSelect(interaction: StringSelectMenuInteraction): P
     });
   }
 
-  await interaction.reply({ content: parts.join('\n'), ephemeral: true });
+  await interaction.reply({ content: parts.join('\n'), flags: MessageFlags.Ephemeral });
 }
 
 async function handleSelfRoleClear(interaction: ButtonInteraction): Promise<void> {
   if (!interaction.guild) {
-    await interaction.reply({ content: 'This only works in a server.', ephemeral: true });
+    await interaction.reply({ content: 'This only works in a server.', flags: MessageFlags.Ephemeral });
     return;
   }
 
@@ -95,7 +97,7 @@ async function handleSelfRoleClear(interaction: ButtonInteraction): Promise<void
     });
 
   if (removable.length === 0) {
-    await interaction.reply({ content: 'You have no self-roles to remove.', ephemeral: true });
+    await interaction.reply({ content: 'You have no self-roles to remove.', flags: MessageFlags.Ephemeral });
     return;
   }
 
@@ -104,7 +106,7 @@ async function handleSelfRoleClear(interaction: ButtonInteraction): Promise<void
   } catch {
     await interaction.reply({
       content: 'Failed to remove roles.',
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
     return;
   }
@@ -118,12 +120,22 @@ async function handleSelfRoleClear(interaction: ButtonInteraction): Promise<void
 
   await interaction.reply({
     content: `Removed: ${removable.map((id) => `<@&${id}>`).join(', ')}`,
-    ephemeral: true,
+    flags: MessageFlags.Ephemeral,
   });
 }
 
 export function registerEvents(client: Client): void {
   client.once(Events.ClientReady, (readyClient) => {
+    readyClient.user.setPresence({
+      status: 'online',
+      activities: [
+        {
+          type: ActivityType.Custom,
+          name: 'Custom Status',
+          state: 'Assigning ranks… blaming lag for the rest',
+        },
+      ],
+    });
     console.log(`Logged in as ${readyClient.user.tag}`);
   });
 
@@ -147,7 +159,10 @@ export function registerEvents(client: Client): void {
       }
     } catch (err) {
       console.error('Interaction error:', err);
-      const payload = { content: 'Something went wrong while handling that interaction.', ephemeral: true };
+      const payload = {
+        content: 'Something went wrong while handling that interaction.',
+        flags: [MessageFlags.Ephemeral] as const,
+      };
       if (interaction.isRepliable()) {
         if (interaction.replied || interaction.deferred) await interaction.followUp(payload);
         else await interaction.reply(payload);

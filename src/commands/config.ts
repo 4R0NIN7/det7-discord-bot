@@ -1,5 +1,6 @@
 import {
   ChannelType,
+  MessageFlags,
   PermissionFlagsBits,
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
@@ -42,7 +43,7 @@ export const configCommand: Command = {
 
   async execute(interaction: ChatInputCommandInteraction) {
     if (!interaction.guild) {
-      await interaction.reply({ content: 'This command can only be used in a server.', ephemeral: true });
+      await interaction.reply({ content: 'This command can only be used in a server.', flags: MessageFlags.Ephemeral });
       return;
     }
 
@@ -59,7 +60,7 @@ export const configCommand: Command = {
         content: channel
           ? `Log channel set to ${channel}.`
           : 'Log channel disabled.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -74,7 +75,7 @@ export const configCommand: Command = {
         content: channel
           ? `Self-role panel restricted to ${channel}.`
           : 'Panel channel restriction removed — panel can be posted anywhere.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -85,7 +86,7 @@ export const configCommand: Command = {
         `**Log channel:** ${cfg.logChannelId ? `<#${cfg.logChannelId}>` : 'not set'}`,
         `**Self-role panel channel:** ${cfg.selfrolePanelChannelId ? `<#${cfg.selfrolePanelChannelId}>` : 'no restriction'}`,
       ];
-      await interaction.reply({ content: lines.join('\n'), ephemeral: true });
+      await interaction.reply({ content: lines.join('\n'), flags: MessageFlags.Ephemeral });
     }
   },
 };

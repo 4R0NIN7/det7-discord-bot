@@ -1,5 +1,6 @@
 import {
   ChannelType,
+  MessageFlags,
   PermissionFlagsBits,
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
@@ -119,7 +120,7 @@ export const clearCommand: Command = {
 
   async execute(interaction: ChatInputCommandInteraction) {
     if (!interaction.guild) {
-      await interaction.reply({ content: 'This command can only be used in a server.', ephemeral: true });
+      await interaction.reply({ content: 'This command can only be used in a server.', flags: MessageFlags.Ephemeral });
       return;
     }
 
@@ -127,7 +128,7 @@ export const clearCommand: Command = {
     if (!guildMember.permissions.has(PermissionFlagsBits.ManageMessages)) {
       await interaction.reply({
         content: 'You need **Manage Messages** to use this command.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -138,13 +139,13 @@ export const clearCommand: Command = {
     if (sub === 'all' && !interaction.options.getBoolean('confirm', true)) {
       await interaction.reply({
         content: 'Set `confirm: True` to wipe the entire channel.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
 
     if (!target || !('id' in target)) {
-      await interaction.reply({ content: 'Channel not found.', ephemeral: true });
+      await interaction.reply({ content: 'Channel not found.', flags: MessageFlags.Ephemeral });
       return;
     }
 
@@ -152,7 +153,7 @@ export const clearCommand: Command = {
     if (!channel || !channel.isTextBased() || channel.isDMBased() || !canBulkDelete(channel)) {
       await interaction.reply({
         content: 'Only text / announcement channels can be cleared.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -161,12 +162,12 @@ export const clearCommand: Command = {
     if (!me?.permissionsIn(channel).has([PermissionFlagsBits.ManageMessages, PermissionFlagsBits.ViewChannel])) {
       await interaction.reply({
         content: 'The bot needs **Manage Messages** and **View Channel** in that channel.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     try {
       const result =
